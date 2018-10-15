@@ -26,15 +26,15 @@
                                         <input type="text" v-model="name" class="form-control">
                                     </div>
                                     <div class="form-group">
-                                        <label>Numbers</label>
+                                        <label>Ticket</label>
                                         <template v-for="(number, key) in numbers">
                                             <div class="input-group">
                                                 <div class="input-group-prepend">
-                                                    <button class="btn btn-outline-secondary" type="button"
+                                                    <!-- <button class="btn btn-outline-secondary" type="button"
                                                         @click="selectedKey = key" title="Select">
                                                         <i class="fa fa-check" v-if="selectedKey == key"></i>
                                                         <i class="fa fa-angle-right" v-else></i>
-                                                    </button>
+                                                    </button> -->
                                                 </div>
                                                 <input type="number" class="form-control" v-model="numbers[key]"
                                                     @click="selectedKey = key" @change="checkTickets">
@@ -82,7 +82,7 @@
                     message: '',
                     show: false
                 },
-                ticketnums: []
+                ticket: ''
             }
         },
         mounted() {
@@ -92,6 +92,10 @@
             })
         },
         methods: {
+            pad (str, max) {
+              str = str.toString();
+              return str.length < max ? this.pad("0" + str, max) : str;
+            },
             notify(messsage, type) {
                 this.notification.show = true;
                 this.notification.message = messsage;
@@ -119,7 +123,10 @@
             },
 
             submitTicket() {
-                var data = {name: this.name, number: this.numbers[this.selectedKey]};
+                var data = {
+                    name: this.name,
+                    number: this.generateTicketString()
+                };
 
                 this.submitting = true;
 
@@ -139,9 +146,24 @@
                 });
             },
 
+            generateTicketString() {
+                var str = "";
+                for (var i = this.numbers.length - 1; i >= 0; i--) {
+                    str += this.pad(this.numbers[i], 2);
+
+                    if (i != 0) {
+                        str+= '-';
+                    }
+                }
+
+                return str;
+            },
+
             checkTickets(e) {
                 console.log(e);
-                axios.get(`/api/check?number=${e.target.value}`).then((res) => {
+                this.ticket = this.generateTicketString();
+
+                axios.get(`/api/check?number=${this.ticket}`).then((res) => {
                     console.log(res.data);
                     if (!res.data.success) {
                         this.notify(res.data.message, "danger");

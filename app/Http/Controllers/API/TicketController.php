@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Ticket;
+use App\TicketNumber;
 use Validator;
 
 class TicketController extends Controller
@@ -18,7 +19,7 @@ class TicketController extends Controller
     public function submit(Request $request)
     {
     	$validator = Validator::make($request->all(), [
-            'number' => 'required|numeric',
+            'number' => 'required',
             'name' => 'required|string'
         ]);
 
@@ -34,7 +35,7 @@ class TicketController extends Controller
         if ($check['exists']) {
         	return response()->json([
             	'success' => false,
-            	'message' => "Sorry, #{$request->number} is aready taken on ".$check['ticket']->created_at->format('M d, Y H:i:s')
+            	'message' => "Sorry, #{$request->number} is already taken on ".$check['ticket']->created_at->format('M d, Y H:i:s')
             ]);
         }
 
@@ -42,7 +43,19 @@ class TicketController extends Controller
     	$ticket->number = $request->number;
     	$ticket->name = $request->name;
 
-    	if ($ticket->save()) {
+        $ticket->save();
+
+        $numbers = explode('-', $request->number);
+
+        // save ticket numbers
+        foreach ($numbers as $key => $number) {
+            TicketNumber::create([
+                'ticket_id' => $ticket->id,
+                'number' => $number
+            ]);
+        }
+
+    	if (!empty($ticket->numbers)) {
     		return response()->json([
     			'success' => true,
     			'message' => "Your ticket with #{$request->number} have been submitted successfully."
@@ -68,7 +81,7 @@ class TicketController extends Controller
     	$numbers = [];
 
     	for ($i=0; $i < $digits; $i++) { 
-    		$numbers[] = $this->generate($digits);
+    		$numbers[] = $this->generate(2);
     	}
 
     	return response()->json([
@@ -92,7 +105,7 @@ class TicketController extends Controller
     		$number = $this->generateRandomInt($digits);
     	}
 
-    	return (int) $number;
+    	return $number;
     }
 
     /**
@@ -104,18 +117,49 @@ class TicketController extends Controller
      */
     public function alreadyExists($number, $returnsTicket = false)
     {
+        $numbers = explode('-', $number);
+
+        $combinations = $this->getCombinations($numbers);
+
     	// check first for existing number
-    	$tikcet = Ticket::where("number", $number)->first();
+    	$ticket = Ticket::whereIn("number", $combinations)->first();
 
     	if (!$returnsTicket) {
-    		return !empty($tikcet);
+    		return !empty($ticket);
     	}
 
     	return [
-    		'exists' => !empty($tikcet),
-    		'ticket' => $tikcet
+    		'exists' => !empty($ticket),
+    		'ticket' => $ticket
     	];
     }
+
+    /**
+     * Returns all possible combinations of items in an array
+     *
+     * @param  array $words
+     * @return array
+     */
+    public function getCombinations($words) {
+        if ( count($words) <= 1 ) {
+            $result = $words;
+        } else {
+            $result = array();
+            for ( $i = 0; $i < count($words); ++$i ) {
+                $firstword = $words[$i];
+                $remainingwords = array();
+                for ( $j = 0; $j < count($words); ++$j ) {
+                    if ( $i <> $j ) $remainingwords[] = $words[$j];
+                }
+                $combos = $this->getCombinations($remainingwords);
+                for ( $j = 0; $j < count($combos); ++$j ) {
+                    $result[] = $firstword . '-' . $combos[$j];
+                }
+            }
+        }
+        return $result;
+    }
+
 
     /**
      * Checks for existing ticket
@@ -126,7 +170,7 @@ class TicketController extends Controller
     public function checkForDuplicates(Request $request)
     {
     	$validator = Validator::make($request->all(), [
-            'number' => 'required|numeric'
+            'number' => 'required'
         ]);
 
         if ($validator->fails()) {
