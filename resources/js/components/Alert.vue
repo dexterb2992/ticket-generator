@@ -16,7 +16,7 @@
 			};
 		},
 		mounted() {
-			this.alertClass = `alert alert-${notification.type} alert-dismissible fade show`
+			this.alertClass = `alert alert-${this.notification.type} alert-dismissible fade show`
 		},
 		methods: {
 			hideAlert() {

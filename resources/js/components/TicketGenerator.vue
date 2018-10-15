@@ -31,7 +31,7 @@
                                             <div class="input-group">
                                                 <div class="input-group-prepend">
                                                     <button class="btn btn-outline-secondary" type="button"
-                                                        @click="selectedKey = key">
+                                                        @click="selectedKey = key" title="Select">
                                                         <i class="fa fa-check" v-if="selectedKey == key"></i>
                                                         <i class="fa fa-angle-right" v-else></i>
                                                     </button>
@@ -41,7 +41,7 @@
                                             </div>
                                         </template>
                                     </div>
-                                    <button class="btn btn-success">
+                                    <button class="btn btn-success" :disabled="submitting">
                                         <i class="fa fa-send" v-show="!submitting"></i>
                                         <i class="fa fa-spinner fa-spin" v-show="submitting"></i>
                                         Submit
