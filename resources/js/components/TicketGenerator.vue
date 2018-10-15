@@ -127,11 +127,7 @@
                     if (res.data.success == true) {
                         this.notify(res.data.message, "success");
                     } else {
-                        this.notification = {
-                            type: 'danger',
-                            message: res.data.message,
-                            show: true
-                        }
+                        this.notify(res.data.message, "danger");
                     }
 
                 }).catch(err => {
@@ -149,10 +145,6 @@
                     console.log(res.data);
                     if (!res.data.success) {
                         this.notify(res.data.message, "danger");
-                    } else {
-                        // this.ticketnums[this.selectedKey] = e.target.value
-                        // this.numbers[this.selectedKey] = e.target.value
-                        // this.hideNotification();
                     }
                 });
             }
