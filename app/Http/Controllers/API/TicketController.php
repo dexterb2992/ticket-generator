@@ -35,7 +35,8 @@ class TicketController extends Controller
         if ($check['exists']) {
         	return response()->json([
             	'success' => false,
-            	'message' => "Sorry, #{$request->number} is already taken on ".$check['ticket']->created_at->format('M d, Y H:i:s')
+            	'message' => "Sorry, #{$request->number} is already taken on "
+                    .$check['ticket']->created_at->format('M d, Y H:i:s')
             ]);
         }
 
@@ -57,7 +58,7 @@ class TicketController extends Controller
             if (empty($number) || $number == '00' || $number == 0) {
                 return response()->json([
                     'success' => false,
-                    'message' => "Please provide a all 3 numbers. Note: 00 is not accepted.",
+                    'message' => "Please provide all 3 numbers. Note: 00 is not accepted.",
                 ], 422);
             }
         }
@@ -87,6 +88,12 @@ class TicketController extends Controller
 		], 500);
     }
 
+    /**
+     * Determine if a given array has duplicates
+     *
+     * @param  array $raw_array
+     * @return bool
+     */
     public function isNotUnique($raw_array) {
         $dupes = array();
         natcasesort($raw_array);
@@ -224,7 +231,8 @@ class TicketController extends Controller
         if ($check['exists']) {
         	return response()->json([
             	'success' => false,
-            	'message' => "Sorry, #$number is aready taken on ".$check['ticket']->created_at->format('M d, Y H:i:s')
+            	'message' => "Sorry, #$number is aready taken on ".$check['ticket']
+                    ->created_at->format('M d, Y H:i:s')
             ]);
         }
 
