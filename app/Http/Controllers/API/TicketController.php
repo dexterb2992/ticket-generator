@@ -43,9 +43,28 @@ class TicketController extends Controller
     	$ticket->number = $request->number;
     	$ticket->name = $request->name;
 
-        $ticket->save();
 
         $numbers = explode('-', $request->number);
+
+        if (!empty($this->isNotUnique($numbers))) {
+            return response()->json([
+                'success' => false,
+                'message' => "All 3 numbers must be unique."
+            ], 422);
+        }
+
+        foreach ($numbers as $key => $number) {
+            if (empty($number) || $number == '00' || $number == 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Please provide a all 3 numbers. Note: 00 is not accepted.",
+                ], 422);
+            }
+        }
+
+        $ticket->save();
+
+        
 
         // save ticket numbers
         foreach ($numbers as $key => $number) {
@@ -66,6 +85,25 @@ class TicketController extends Controller
 			'success' => false,
 			'message' => "Something went wrong while trying to submit your number. Please try again later."
 		], 500);
+    }
+
+    public function isNotUnique($raw_array) {
+        $dupes = array();
+        natcasesort($raw_array);
+        reset($raw_array);
+
+        $old_key   = NULL;
+        $old_value = NULL;
+        foreach ($raw_array as $key => $value) {
+            if ($value === NULL) { continue; }
+            if (strcasecmp($old_value, $value) === 0) {
+                $dupes[$old_key] = $old_value;
+                $dupes[$key]     = $value;
+            }
+            $old_value = $value;
+            $old_key   = $key;
+        }
+        return $dupes;
     }
 
     /**
@@ -99,10 +137,10 @@ class TicketController extends Controller
     public function generate($digits)
     {
 
-    	$number = str_pad(rand(0, pow(10, $digits)-1), $digits, '0', STR_PAD_LEFT);
+    	$number = str_pad(rand(1, pow(10, $digits)-1), $digits, '0', STR_PAD_LEFT);
 
     	if ($this->alreadyExists($number)) {
-    		$number = $this->generateRandomInt($digits);
+    		$number = $this->generate($digits);
     	}
 
     	return $number;

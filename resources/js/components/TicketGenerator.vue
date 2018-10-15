@@ -37,7 +37,10 @@
                                                     </button> -->
                                                 </div>
                                                 <input type="number" class="form-control" v-model="numbers[key]"
-                                                    @click="selectedKey = key" @change="checkTickets">
+                                                    @click="selectedKey = key" @change="checkTickets"
+                                                    min="1" max="99" step="1"
+                                                    pattern="/^-?\d+\.?\d*$/" onKeyPress="if(this.value.length==2) return false;">
+
                                             </div>
                                         </template>
                                     </div>
