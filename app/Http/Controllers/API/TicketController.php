@@ -92,7 +92,7 @@ class TicketController extends Controller
      * Determine if a given array has duplicates
      *
      * @param  array $raw_array
-     * @return bool
+     * @return array The duplicate items
      */
     public function isNotUnique($raw_array) {
         $dupes = array();
